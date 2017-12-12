@@ -1,0 +1,15 @@
+[includeIf "gitdir:~/"]
+	path = .gitconfig-personal
+[includeIf "gitdir:~/Code/bw7/"]
+	path = .gitconfig-bw7
+
+[push]
+	default = simple
+[rerere]
+	enabled = true
+[merge]
+	tool = meld
+[diff]
+	tool = meld
+[pull]
+	rebase = true
