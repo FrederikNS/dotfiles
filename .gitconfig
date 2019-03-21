@@ -13,3 +13,8 @@
 	tool = meld
 [pull]
 	rebase = true
+[core]
+	excludesfile = ~/.gitignore
+[user]
+	email = frederikns@gmail.com
+	name = Frederik Nordahl Jul Sabroe

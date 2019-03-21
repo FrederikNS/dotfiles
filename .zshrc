@@ -1,3 +1,4 @@
+zmodload zsh/zprof
 # Fix Keyboard
 autoload zkbd
 [[ ! -f ${ZDOTDIR:-$HOME}/.zkbd/$TERM-:1 ]] && zkbd
@@ -50,14 +51,14 @@ export EDITOR=nano
 export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE=fg=8
 export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
 export GOPATH=$HOME/Code/go
-export PATH=$PATH:$HOME/.local/opt/android-sdk/platform-tools:$HOME/.local/opt/android-sdk/tools
+export PATH=$PATH:$HOME/.local/bin:$HOME/.local/opt/android-sdk/platform-tools:$HOME/.local/opt/android-sdk/tools
 export AWS_PROFILE=default
 export FIREFOX_DEVELOPER_BIN=/opt/firefox-dev/firefox
 export WORDCHARS='*?_-[]~=&;!#$%^(){}<>'
 
 # Bind Alt-forward and Alt-backwards to forward-word and backward-word
-bindkey '^[^[[D' backward-word
-bindkey '^[^[[C' forward-word
+bindkey '^[[1;3D' backward-word
+bindkey '^[[1;3C' forward-word
 
 # Load zPlug
 source ~/.zplug/init.zsh
@@ -105,3 +106,9 @@ source "$HOME/.sdkman/bin/sdkman-init.sh"
 
 # Travis-cli
 [ -f /home/frederiknjs/.travis/travis.sh ] && source /home/frederiknjs/.travis/travis.sh
+
+# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
+export PATH="$PATH:$HOME/.rvm/bin"
+
+autoload -U +X bashcompinit && bashcompinit
+complete -o nospace -C /home/frederiknjs/bin/vault vault
