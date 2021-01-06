@@ -1,20 +1,9 @@
-zmodload zsh/zprof
-# Fix Keyboard
-autoload zkbd
-[[ ! -f ${ZDOTDIR:-$HOME}/.zkbd/$TERM-:1 ]] && zkbd
-source ${ZDOTDIR:-$HOME}/.zkbd/$TERM-:1
-
-[[ -n ${key[Backspace]} ]] && bindkey "${key[Backspace]}" backward-delete-char
-[[ -n ${key[Insert]} ]] && bindkey "${key[Insert]}" overwrite-mode
-[[ -n ${key[Home]} ]] && bindkey "${key[Home]}" beginning-of-line
-[[ -n ${key[PageUp]} ]] && bindkey "${key[PageUp]}" up-line-or-history
-[[ -n ${key[Delete]} ]] && bindkey "${key[Delete]}" delete-char
-[[ -n ${key[End]} ]] && bindkey "${key[End]}" end-of-line
-[[ -n ${key[PageDown]} ]] && bindkey "${key[PageDown]}" down-line-or-history
-[[ -n ${key[Up]} ]] && bindkey "${key[Up]}" up-line-or-search
-[[ -n ${key[Left]} ]] && bindkey "${key[Left]}" backward-char
-[[ -n ${key[Down]} ]] && bindkey "${key[Down]}" down-line-or-search
-[[ -n ${key[Right]} ]] && bindkey "${key[Right]}" forward-char
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
 
 # History File
 if [ -z "$HISTFILE" ]; then
@@ -45,70 +34,98 @@ setopt inc_append_history
 # Allow auto-completing '..' and '.'
 zstyle ':completion:*' special-dirs true
 
+# hide cdpath suggestions from plain cd
+zstyle ':completion:*:complete:(cd|pushd):*' tag-order \
+    'local-directories named-directories'
+
 # Various Environment Vars
-export KOPS_STATE_STORE=s3://kops.blackwoodseven.com
 export EDITOR=nano
-export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE=fg=8
-export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
-export GOPATH=$HOME/Code/go
-export PATH=$PATH:$HOME/.local/bin:$HOME/.local/opt/android-sdk/platform-tools:$HOME/.local/opt/android-sdk/tools
+#export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE=fg=8
+export KOPS_STATE_STORE=s3://kops.infra.core.siteimprove.systems
+export KOPS_STATE_S3_ACL=bucket-owner-full-control
+#export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
+export GOPATH=$HOME/code/go
+export PATH=$PATH:$HOME/code/siteimprove/coreinfra-scripts:/var/lib/snapd/snap/bin:$HOME/.local/bin:$HOME/.cargo/bin:$GOPATH/bin:$HOME/.krew/bin:$HOME/.local/opt/android-sdk/platform-tools:$HOME/.local/opt/android-sdk/tools
 export AWS_PROFILE=default
 export FIREFOX_DEVELOPER_BIN=/opt/firefox-dev/firefox
-export WORDCHARS='*?_-[]~=&;!#$%^(){}<>'
+export WORDCHARS='*?_[]~=&;!#$%^(){}<>'
+export MOZ_USE_XINPUT2=1
+
+#setopt auto_cd
+cdpath=($HOME .. ../.. $HOME/code/siteimprove $HOME/code/personal $HOME/open-source/)
 
 # Bind Alt-forward and Alt-backwards to forward-word and backward-word
+zle -N backward-word backward-word-end
+backward-word-end() {
+  # Move to the beginning of the current word.
+  zle .backward-word
+
+  # If we're at the beginning of the buffer, we don't need to do anything else.
+  if (( CURSOR > 0 )); then
+    # Otherwise, move to the end of the word before the current one.
+    zle .backward-word
+    zle .emacs-forward-word
+  fi
+}
+
 bindkey '^[[1;3D' backward-word
-bindkey '^[[1;3C' forward-word
+bindkey '^[[1;3C' emacs-forward-word
 
-# Load zPlug
-source ~/.zplug/init.zsh
+bindkey '^[[3~' delete-char
+bindkey '^[[H' beginning-of-line
+bindkey '^[[F' end-of-line
 
-# Prepare Plugins (oh-my-zsh)
-zplug "plugins/aws", from:oh-my-zsh
-zplug "plugins/docker-compose", from:oh-my-zsh
-zplug "plugins/docker", from:oh-my-zsh
-zplug "plugins/git-extras", from:oh-my-zsh
-zplug "plugins/git", from:oh-my-zsh
-zplug "plugins/kubectl", from:oh-my-zsh
-zplug "plugins/lein", from:oh-my-zsh
-zplug "plugins/node", from:oh-my-zsh
-zplug "plugins/npm", from:oh-my-zsh
-zplug "plugins/sudo", from:oh-my-zsh
-zplug "plugins/thefuck", from:oh-my-zsh
-zplug "plugins/tmux", from:oh-my-zsh
-zplug "plugins/yarn", from:oh-my-zsh
-zplug "plugins/z", from:oh-my-zsh
+autoload -Uz compinit
+compinit
 
-# Prepare Plugins (zsh-users)
-zplug "zsh-users/zsh-history-substring-search"
-zplug "zsh-users/zsh-autosuggestions"
-zplug "zsh-users/zsh-syntax-highlighting"
-
-# Prepare Theme
-# zplug 'themes/agnoster', from:oh-my-zsh
-zplug 'zakaziko99/agnosterzak-ohmyzsh-theme', as:theme
-
-# Install plugins if there are plugins that have not been installed
-if ! zplug check --verbose; then
-    printf "Install? [y/N]: "
-    if read -q; then
-        echo; zplug install
-    fi
+### Added by Zinit's installer
+if [[ ! -f $HOME/.zinit/bin/zinit.zsh ]]; then
+    print -P "%F{33}▓▒░ %F{220}Installing %F{33}DHARMA%F{220} Initiative Plugin Manager (%F{33}zdharma/zinit%F{220})…%f"
+    command mkdir -p "$HOME/.zinit" && command chmod g-rwX "$HOME/.zinit"
+    command git clone https://github.com/zdharma/zinit "$HOME/.zinit/bin" && \
+        print -P "%F{33}▓▒░ %F{34}Installation successful.%f%b" || \
+        print -P "%F{160}▓▒░ The clone has failed.%f%b"
 fi
 
-# Load plugins and theme
-zplug load
+source "$HOME/.zinit/bin/zinit.zsh"
+autoload -Uz _zinit
+(( ${+_comps} )) && _comps[zinit]=_zinit
+
+# Load a few important annexes, without Turbo
+# (this is currently required for annexes)
+zinit light-mode for \
+    zinit-zsh/z-a-rust \
+    zinit-zsh/z-a-as-monitor \
+    zinit-zsh/z-a-patch-dl \
+    zinit-zsh/z-a-bin-gem-node
+### End of Zinit's installer chunk
+
+zinit for \
+    light-mode  zsh-users/zsh-autosuggestions \
+                zdharma/fast-syntax-highlighting \
+                zdharma/history-search-multi-word
+
+# Prepare Theme
+zinit ice depth=1; zinit light romkatv/powerlevel10k
+
+. $HOME/.asdf/asdf.sh
+
+source /usr/share/doc/find-the-command/ftc.zsh
 
 alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
+alias arst=asdf
 
-# Enable SDKMAN (for gradle)
-source "$HOME/.sdkman/bin/sdkman-init.sh"
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
 
-# Travis-cli
-[ -f /home/frederiknjs/.travis/travis.sh ] && source /home/frederiknjs/.travis/travis.sh
-
-# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
-export PATH="$PATH:$HOME/.rvm/bin"
+source <(kubectl completion zsh)
+source <(helm completion zsh)
 
 autoload -U +X bashcompinit && bashcompinit
 complete -o nospace -C /home/frederiknjs/bin/vault vault
+
+alias ssh="TERM=xterm-256color ssh"
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+eval $(thefuck --alias)

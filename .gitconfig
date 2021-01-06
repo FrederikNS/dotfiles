@@ -1,20 +1,22 @@
 [includeIf "gitdir:~/"]
 	path = .gitconfig-personal
-[includeIf "gitdir:~/Code/bw7/"]
-	path = .gitconfig-bw7
+[includeIf "gitdir:~/code/siteimprove/"]
+	path = .gitconfig-siteimprove
 
 [push]
-	default = simple
+	default = current
 [rerere]
 	enabled = true
 [merge]
 	tool = meld
 [diff]
 	tool = meld
+	algorithm = histogram
 [pull]
 	rebase = true
 [core]
 	excludesfile = ~/.gitignore
+	autocrlf = input
 [user]
 	email = frederikns@gmail.com
 	name = Frederik Nordahl Jul Sabroe
