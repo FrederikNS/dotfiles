@@ -39,17 +39,7 @@ zstyle ':completion:*:complete:(cd|pushd):*' tag-order \
     'local-directories named-directories'
 
 # Various Environment Vars
-export EDITOR=nano
-#export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE=fg=8
-export KOPS_STATE_STORE=s3://kops.infra.core.siteimprove.systems
-export KOPS_STATE_S3_ACL=bucket-owner-full-control
-#export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
-export GOPATH=$HOME/code/go
-export PATH=$PATH:$HOME/code/siteimprove/coreinfra-scripts:/var/lib/snapd/snap/bin:$HOME/.local/bin:$HOME/.cargo/bin:$GOPATH/bin:$HOME/.krew/bin:$HOME/.local/opt/android-sdk/platform-tools:$HOME/.local/opt/android-sdk/tools
-export AWS_PROFILE=default
-export FIREFOX_DEVELOPER_BIN=/opt/firefox-dev/firefox
 export WORDCHARS='*?_[]~=&;!#$%^(){}<>'
-export MOZ_USE_XINPUT2=1
 
 #setopt auto_cd
 cdpath=($HOME .. ../.. $HOME/code/siteimprove $HOME/code/personal $HOME/open-source/)
@@ -74,9 +64,6 @@ bindkey '^[[1;3C' emacs-forward-word
 bindkey '^[[3~' delete-char
 bindkey '^[[H' beginning-of-line
 bindkey '^[[F' end-of-line
-
-autoload -Uz compinit
-compinit
 
 ### Added by Zinit's installer
 if [[ ! -f $HOME/.zinit/bin/zinit.zsh ]]; then
@@ -108,7 +95,10 @@ zinit for \
 # Prepare Theme
 zinit ice depth=1; zinit light romkatv/powerlevel10k
 
-. $HOME/.asdf/asdf.sh
+zinit wait lucid atload"zicompinit; zicdreplay" blockf for \
+  depth"1" pick"asdf.sh" src"completions/_asdf" @asdf-vm/asdf \
+  OMZP::kubectl/kubectl.plugin.zsh \
+  OMZP::helm/helm.plugin.zsh
 
 source /usr/share/doc/find-the-command/ftc.zsh
 
@@ -116,12 +106,6 @@ alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
 alias arst=asdf
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
-
-source <(kubectl completion zsh)
-source <(helm completion zsh)
-
-autoload -U +X bashcompinit && bashcompinit
-complete -o nospace -C /home/frederiknjs/bin/vault vault
 
 alias ssh="TERM=xterm-256color ssh"
 
